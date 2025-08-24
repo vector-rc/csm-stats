@@ -1,0 +1,16 @@
+{
+  "name": "csm-stats",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.873.0",
+    "hono": "^4.9.2",
+    "mysql2": "^3.14.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.26"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

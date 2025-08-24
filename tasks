@@ -1,0 +1,24 @@
+id o código de la compañía
+monto
+
+crear mockup (2 horas)
+crear tabla para los datos optimizados (1 hora)
+crear servicio para sincronizar ventas (3 horas)
+crear servicios
+    - 
+    - ventas de los ultimos 3 meses (2 horas)
+    - ultima compra y ultima venta (1 hora) 
+    - cantidad de sucursales (1 hora)
+    - cantidad de sucursales (1 hora)
+
+subir api a produccion (2 horas)
+
+total (12 horas)
+
+
+
+get acl company by acl_code
+get acl-template by template_id from acl_company
+get node name from acl_template
+connect to node datasource 
+get employe, subsidiaries,purchases, etc 
