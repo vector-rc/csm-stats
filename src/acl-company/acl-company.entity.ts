@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 
 @Entity('dp6_company', { schema: 'dp6_acl_quipu_prod' })
 export class AclCompany {
@@ -62,7 +62,7 @@ export class AclCompany {
   @Column({ name: 'updated_at' })
   updatedAt?: Date
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deletedAt?: Date
 
   @Column({ name: 'country_id' })

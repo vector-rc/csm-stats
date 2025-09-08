@@ -11,6 +11,9 @@ import { PurDocuments } from "./csm-purchase/csm-purchase.entity";
 import { SalDocuments } from "./csm-sale/csm-sale.entity";
 import { ComSubsidiaries } from "./csm-subsidiary/csm-subsidiary.entity";
 import { AbstractSale } from "./abstract-sale/sale-abstract.entity";
+import { WarWarehousesProducts } from "./csm-warehouse/csm-warehouse-product.entity";
+import { SalTerminal } from "./csm-terminal/csm-terminal.entity";
+import { WarProduct } from "./csm-product/war-product.entity";
 
 const client = new SecretsManagerClient({
     region: "us-east-1",
@@ -86,7 +89,7 @@ async function initDbs() {
                 username: secretValueSales.username,
                 password: secretValueSales.password,
                 database: secretValueSales.dbname,
-                entities: [ComCompanies, ComDelivery, ComEmployee, PurDocuments, SalDocuments, ComSubsidiaries,AbstractSale],
+                entities: [ComCompanies, ComDelivery, ComEmployee, PurDocuments, SalDocuments, ComSubsidiaries,AbstractSale,SalTerminal],
                 synchronize: false,
                 logging: process.env.TYPEORM_LOGS === 'true'
             }
@@ -99,7 +102,7 @@ async function initDbs() {
                 username: secretValueProducts.username,
                 password: secretValueProducts.password,
                 database: secretValueProducts.dbname,
-                entities: [WarWarehouses,],
+                entities: [WarWarehouses,WarWarehousesProducts,WarProduct],
                 synchronize: false,
                 logging: process.env.TYPEORM_LOGS === 'true'
             }

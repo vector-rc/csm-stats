@@ -15,11 +15,18 @@ async function generateEntity(tableName: string, schema: string) {
   //   database: schema,
   // });
   const connection = await mysql.createConnection({
-    host: "n1salesdb.cytc2oec81wd.us-east-1.rds.amazonaws.com",
-    user: "admin",
-    password: "lkaWlgSS1DIOYgzGDRnFCixnzxCN916w",
+    host: "127.0.0.1",
+    user: "root",
+    port: 3309,
+    password: "toor",
     database: schema,
   });
+  // const connection = await mysql.createConnection({
+  //   host: "n1salesdb.cytc2oec81wd.us-east-1.rds.amazonaws.com",
+  //   user: "admin",
+  //   password: "lkaWlgSS1DIOYgzGDRnFCixnzxCN916w",
+  //   database: schema,
+  // });
 
   const [rows] = await connection.execute<any[]>(
     `SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_DEFAULT 
@@ -86,6 +93,7 @@ async function generateEntity(tableName: string, schema: string) {
       // 👇 Forzar mapeo correcto para json
       // if (col.DATA_TYPE === "json") options += `, type: 'json'`;
       // if (col.DATA_TYPE === "text" || col.DATA_TYPE.includes("text"))
+      options += `, nullable: ${optional?'true':'false'}`;
       options += `, type: '${col.DATA_TYPE}'`;
 
       options += ` }`;

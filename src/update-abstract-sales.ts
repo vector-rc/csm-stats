@@ -6,22 +6,40 @@ import { AbstractSale } from "./abstract-sale/sale-abstract.entity";
 export async function updateAbstractSales(
     nodeName: string,
     chunkSize: number,
+    recreateTable = false
 ) {
 
     const datasource = getDatasource(nodeName)
+
+    if(recreateTable){
+        await datasource.sales.query(`DROP TABLE IF EXISTS abstract_sale;`)
+    }
 
     await datasource.sales.query(`
     CREATE TABLE IF NOT EXISTS abstract_sale (
         id INT AUTO_INCREMENT PRIMARY KEY,
         sale_id INT,
         acl_id INT,
+        warehouse_id INT,
+        terminal_id INT,
         amount DECIMAL(12,2),
         type TINYINT,
         state TINYINT,
-        emitted_at BIGINT(20),
         created_at BIGINT(20)
 );`
     )
+    try {
+        await datasource.sales.query(`ALTER TABLE abstract_sale ADD INDEX idx_abstract_sale_acl_id_created_at (acl_id, created_at);`)
+    } catch (error) {
+        console.log('ERROR AL CREAR EL INDICE: idx_abstract_sale_acl_id_created_at', error)
+    }
+
+    try {
+        await datasource.sales.query(`ALTER TABLE abstract_sale ADD INDEX idx_abstract_sale_created_at (created_at);`)
+    } catch (error) {
+        console.log('ERROR AL CREAR EL INDICE: idx_abstract_sale_created_at', error)
+    }
+
 
     // datasource.sales.setOptions({ entities: [ComCompanies, ComDelivery, ComEmployee, PurDocuments, SalDocuments, ComSubsidiaries, AbstractSale] })
 
@@ -71,7 +89,7 @@ export async function updateAbstractSales(
                 : i * chunkSize + chunkSize + firstId - 1;
         console.log(`📥 Scanning rows ${fromId} - ${toId} `);
 
-        const sales = await csmSalesRepo.find({ where: { id: Between(fromId, toId), deletedAt: IsNull() }, select: { id: true, companyId: true, createdAt: true, amount: true, salTypeDocumentId: true, salStatesId: true, dateEmission: true } })
+        const sales = await csmSalesRepo.find({ where: { id: Between(fromId, toId), deletedAt: IsNull() }, select: { id: true, companyId: true, amount: true, salTypeDocumentId: true, salStatesId: true, creationGeneratedAt: true,warehouseId:true,terminalId:true } })
 
 
         if (sales && sales.length) {
@@ -80,8 +98,7 @@ export async function updateAbstractSales(
             sales.forEach((sale) => {
                 const aclId = companiesMap[sale.companyId]
                 if (!aclId) return
-                const createdAt = sale.createdAt ? (Number.isNaN(sale.createdAt?.getTime()) ? 0 : sale.createdAt?.getTime()) : 0
-                const emittedAt = sale.dateEmission ? (Number.isNaN(sale.dateEmission?.getTime()) ? 0 : sale.dateEmission?.getTime()) : 0
+                const createdAt = sale.creationGeneratedAt ? (Number.isNaN(sale.creationGeneratedAt?.getTime()) ? 0 : sale.creationGeneratedAt?.getTime()) : 0
 
                 salesToInsert.push({
                     aclId,
@@ -89,9 +106,10 @@ export async function updateAbstractSales(
                     amount: sale.amount ?? 0,
                     createdAt,
                     type: sale.salTypeDocumentId ?? 0,
-                    emittedAt,
                     state: sale.salStatesId ?? 0,
                     saleId: sale.id ?? 0,
+                    terminalId: sale.terminalId ?? 0,
+                    warehouseId: sale.warehouseId ?? 0,
                 })
             })
 

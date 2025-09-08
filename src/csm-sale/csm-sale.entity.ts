@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 
 @Entity('sal_documents', { schema: 'dp6_quipu_prod' })
 export class SalDocuments {
@@ -386,7 +386,7 @@ export class SalDocuments {
   @Column({ name: 'day_number', type: 'int' })
   dayNumber?: number
 
-  @Column({ name: 'deleted_at', type: 'timestamp' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deletedAt?: Date
 
   @Column({ name: 'synced_at', type: 'timestamp' })

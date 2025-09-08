@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 
 @Entity('com_subsidiaries', { schema: 'dp6_quipu_prod' })
 export class ComSubsidiaries {
@@ -134,7 +134,7 @@ export class ComSubsidiaries {
   @Column({ name: 'flag_active', type: 'tinyint' })
   flagActive?: number
 
-  @Column({ name: 'deleted_at', type: 'timestamp' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deletedAt?: Date
 
   @Column({ name: 'created_at', type: 'timestamp' })

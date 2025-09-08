@@ -1,6 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 
-@Entity('pur_documents', { schema: 'dp6_quipu_prod' })
+@Entity('pur_documents', { schema: 'dp6_quipu_prod', })
 export class PurDocuments {
   @PrimaryGeneratedColumn()
   id: number
@@ -233,7 +233,7 @@ export class PurDocuments {
   @Column({ name: 'flag_active', type: 'tinyint' })
   flagActive?: number
 
-  @Column({ name: 'deleted_at', type: 'timestamp' })
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp' })
   deletedAt?: Date
 
   @Column({ name: 'created_at', type: 'timestamp' })
