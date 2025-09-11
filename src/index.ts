@@ -72,11 +72,16 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   const aclTemplate = await aclTemplateRepo.findOneBy({ id: aclCompany?.templateId })
 
   // console.log('ACL TEMPLATE SETTINGS',aclTemplate?.settings)
-  const nodeName = aclTemplate?.settings.domains.find((d: any) => d.code === 'PRODUCTS_URL').endPoint.replace('https://', '').split('.')[0]
-  const datasource = getDatasource(nodeName)
+  const csmNode = aclTemplate?.settings.domains.find((d: any) => d.code === 'PRODUCTS_URL').endPoint.replace('https://', '').split('.')[0]
+  const datasource = getDatasource(csmNode)
 
   const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
   const csmCompany = await csmCompanyRepo.findOneBy({ aclId: aclCompany?.id })
+
+  if (!csmCompany) {
+    return c.json({ error: `Company not found in node ${csmNode} `}, 404)
+  }
+
 
   const csmEmployeesRepo = datasource.sales.getRepository(ComEmployee)
   const employeesCount = await csmEmployeesRepo.countBy({ companyId: csmCompany?.id })
@@ -123,7 +128,7 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   const purchasesMonth3 = await csmPurchasesRepo.find({ where: { companyId: csmCompany?.id, documentDateNumber: Between(dateMonth3Range.start, dateMonth3Range.end), deletedAt: IsNull() }, select: { id: true, amount: true } })
 
   return c.json({
-    csm_node: nodeName,
+    csm_node: csmNode,
     acl_id: aclCompany?.id,
     acl_code: aclCompany?.codeCompany,
     company_id: csmCompany?.id,
