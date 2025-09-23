@@ -14,7 +14,7 @@ export class ComSubsidiaries {
   @Column({ name: 'ruc', type: 'text' })
   ruc?: string
 
-  @Column({ name: 'location', type: 'point' })
+  @Column({ name: 'location', type: 'text' })
   location?: any
 
   @Column({ name: 'ubigeo', type: 'varchar' })

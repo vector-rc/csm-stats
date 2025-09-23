@@ -32,7 +32,7 @@ export class WarWarehouses {
   @Column({ name: 'url_logo', type: 'text' })
   urlLogo?: string
 
-  @Column({ name: 'location', type: 'point' })
+  @Column({ name: 'location', type: 'text' })
   location?: any
 
   @Column({ name: 'longitude', type: 'decimal' })
