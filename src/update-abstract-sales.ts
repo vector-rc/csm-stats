@@ -11,7 +11,7 @@ export async function updateAbstractSales(
 
     const datasource = getDatasource(nodeName)
 
-    if(recreateTable){
+    if (recreateTable) {
         await datasource.sales.query(`DROP TABLE IF EXISTS abstract_sale;`)
     }
 
@@ -89,7 +89,7 @@ export async function updateAbstractSales(
                 : i * chunkSize + chunkSize + firstId - 1;
         console.log(`📥 Scanning rows ${fromId} - ${toId} `);
 
-        const sales = await csmSalesRepo.find({ where: { id: Between(fromId, toId), deletedAt: IsNull() }, select: { id: true, companyId: true, amount: true, salTypeDocumentId: true, salStatesId: true, creationGeneratedAt: true,warehouseId:true,terminalId:true } })
+        const sales = await csmSalesRepo.find({ where: { id: Between(fromId, toId), deletedAt: IsNull() }, select: { id: true, companyId: true, amount: true, salTypeDocumentId: true, salStatesId: true, creationGeneratedAt: true, warehouseId: true, terminalId: true } })
 
 
         if (sales && sales.length) {
