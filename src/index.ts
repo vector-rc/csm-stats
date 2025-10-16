@@ -18,6 +18,7 @@ import { SalTerminal } from "./csm-terminal/csm-terminal.entity";
 import { WarProduct } from "./csm-product/war-product.entity";
 import { CsmTypeDocument } from "./csm-document-type.entity";
 import { proxyC3Controller } from "./csm-c3-proxy";
+import { SalOrders } from "./csm-order.entity";
 
 process.env.TZ = "UTC";
 const app = new Hono()
@@ -46,7 +47,6 @@ function getMonthName(date: Date, locale: string = "es-ES"): string {
   return date.toLocaleString(locale, { month: "long" });
 }
 
-
 interface AbstractMonthData {
   month_name: string;
   month_number: number;
@@ -61,6 +61,14 @@ interface AbstractMonthData {
   purchases_count: number;
   purchases_amount: number;
   purchases_types_count: {
+    total: number;
+    facturas: number;
+    boletas: number;
+    otros: number;
+  };
+  orders_count: number;
+  orders_amount: number;
+  orders_types_count: {
     total: number;
     facturas: number;
     boletas: number;
@@ -88,6 +96,7 @@ interface AbstractResponse {
   first_sale_date: Date | null;
   last_sale_date: Date | null;
   last_purchase_date: Date | null;
+  last_order_date: Date | null;
   last_three_months: AbstractMonthData[];
   employees_count: number;
   warehouses_count: number;
@@ -106,14 +115,9 @@ function getMonthByUnixTime(time: number, ranges: { monthName: string, start: nu
     }
   }
   return null
-
-
 }
 
-async function getDataLastMonths(countMonths: number, abstractSaleRepo: Repository<AbstractSale>, aclCompany: AclCompany, warehouses: WarWarehouses[], docTypesMap: {
-  [k: string]: CsmTypeDocument;
-}, csmPurchasesRepo: Repository<PurDocuments>, csmCompany: ComCompanies) {
-
+async function getDataLastMonths(countMonths: number, abstractSaleRepo: Repository<AbstractSale>, aclCompany: AclCompany, warehouses: WarWarehouses[], docTypesMap: Record<string, CsmTypeDocument>, csmPurchasesRepo: Repository<PurDocuments>, csmCompany: ComCompanies, csmOrdersRepo: Repository<SalOrders>) {
 
   const today = new Date()
   const months: { monthName: string, monthNumber: number, start: number, end: number }[] = []
@@ -123,25 +127,61 @@ async function getDataLastMonths(countMonths: number, abstractSaleRepo: Reposito
     const monthName = getMonthName(dateMonth);
     const monthRange = getMonthUnixRange(dateMonth);
     months.push({ monthName, monthNumber: dateMonth.getMonth() + 1, ...monthRange })
-
   }
+
   const lastMonth = months[0]
-  const firstMonth = months.at(-1)
-  const sales = await abstractSaleRepo.find({ where: { aclId: aclCompany?.id, createdAt: Between(firstMonth.start, lastMonth.end) }, select: { id: true, amount: true, warehouseId: true, type: true,createdAt:true } })
+  const firstMonth = months[countMonths]
+  const sales = await abstractSaleRepo.find({ where: { aclId: aclCompany?.id, createdAt: Between(firstMonth.start, lastMonth.end) }, select: { id: true, amount: true, warehouseId: true, type: true, createdAt: true } })
 
-  const warehousesMonthsData: Record<string, {
-    id: number, months: Record<string, AbstractMonthData>
-  }> = Object.fromEntries(warehouses.map(w => [w.id, { id: w.id, months: Object.fromEntries(months.map(r => [r.monthName, { month_name: r.monthName, month_number: r.monthNumber, sales_count: 0, sales_amount: 0, sales_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 }, purchases_count: 0, purchases_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 }, purchases_amount: 0 }])) }]))
-  const monthsData = Object.fromEntries(months.map(r => [r.monthName, { month_name: r.monthName, month_number: r.monthNumber, sales_count: 0, sales_amount: 0, sales_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 }, purchases_count: 0, purchases_amount: 0, purchases_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 } }]))
-
+  const warehousesMonthsData: Record<string, { id: number, months: Record<string, AbstractMonthData> }> =
+    Object.fromEntries(
+      warehouses.map(w => [
+        w.id,
+        {
+          id: w.id,
+          months: Object.fromEntries(
+            months.map(r => [
+              r.monthName,
+              {
+                month_name: r.monthName,
+                month_number: r.monthNumber,
+                sales_count: 0,
+                sales_amount: 0,
+                sales_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 },
+                purchases_count: 0,
+                purchases_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 },
+                purchases_amount: 0,
+                orders_count: 0,
+                orders_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 },
+                orders_amount: 0
+              }
+            ]))
+        }]))
+  const monthsData = Object.fromEntries(
+    months.map(r =>
+      [
+        r.monthName,
+        {
+          month_name: r.monthName,
+          month_number: r.monthNumber,
+          sales_count: 0,
+          sales_amount: 0,
+          sales_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 },
+          purchases_count: 0,
+          purchases_amount: 0,
+          purchases_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 },
+          orders_count: 0,
+          orders_amount: 0,
+          orders_types_count: { total: 0, facturas: 0, boletas: 0, otros: 0 }
+        }]))
 
   sales.forEach((sal: AbstractSale) => {
     if (!sal.warehouseId) return;
+
     const warData = warehousesMonthsData[sal.warehouseId]
-
     if (!warData) return;
-    const month = getMonthByUnixTime(sal.createdAt, months)
 
+    const month = getMonthByUnixTime(sal.createdAt, months)
     if (!month) return
 
     const monthData = monthsData[month.monthName]
@@ -156,13 +196,11 @@ async function getDataLastMonths(countMonths: number, abstractSaleRepo: Reposito
     if (docTypesMap[sal.type].code === 'FAC') {
       warMonthData.sales_types_count.facturas += 1
       monthData.sales_types_count.facturas += 1
-    }
-    else if (docTypesMap[sal.type].code === 'BOL') {
+    } else if (docTypesMap[sal.type].code === 'BOL') {
       warMonthData.sales_types_count.boletas += 1
       monthData.sales_types_count.boletas += 1
 
-    }
-    else {
+    } else {
       warMonthData.sales_types_count.otros += 1
       monthData.sales_types_count.otros += 1
     }
@@ -170,43 +208,69 @@ async function getDataLastMonths(countMonths: number, abstractSaleRepo: Reposito
 
   const purchases = await csmPurchasesRepo.find({ where: { companyId: csmCompany?.id, documentDateNumber: Between(firstMonth.start, lastMonth.end), deletedAt: IsNull() }, select: { id: true, amount: true, warehouseId: true, typeDocumentId: true, documentDateNumber: true } })
 
-
   purchases.forEach((pur: PurDocuments) => {
     if (!pur.warehouseId) return;
     if (!pur.typeDocumentId) return;
     if (!pur.documentDateNumber) return;
     const warData = warehousesMonthsData[pur.warehouseId]
-
     if (!warData) return;
 
     const month = getMonthByUnixTime(pur.documentDateNumber, months)
-
     if (!month) return
 
     const monthData = monthsData[month.monthName]
     const warMonthData = warData.months[month.monthName]
 
     monthData.purchases_amount += Number(pur.amount ?? 0)
-
     monthData.purchases_count += 1
     monthData.purchases_types_count.total += 1
+
     warMonthData.purchases_amount += Number(pur.amount ?? 0)
     warMonthData.purchases_count += 1
     warMonthData.purchases_types_count.total += 1
     if (docTypesMap[pur.typeDocumentId].code === 'FAC') {
       warMonthData.purchases_types_count.facturas += 1
       monthData.purchases_types_count.facturas += 1
-
-    }
-    else if (docTypesMap[pur.typeDocumentId].code === 'BOL') {
+    } else if (docTypesMap[pur.typeDocumentId].code === 'BOL') {
       warMonthData.purchases_types_count.boletas += 1
       monthData.purchases_types_count.boletas += 1
-
-    }
-    else {
+    } else {
       warMonthData.purchases_types_count.otros += 1
       monthData.purchases_types_count.otros += 1
+    }
+  })
 
+  const orders = await csmOrdersRepo.find({ where: { companyId: csmCompany?.id, createdAtNumber: Between(firstMonth.start, lastMonth.end), deletedAt: IsNull() }, select: { id: true, typeDocumentId: true, createdAtNumber: true, warehouseId: true,total:true } })
+
+  orders.forEach((order: SalOrders) => {
+    if (!order.warehouseId) return;
+    if (!order.typeDocumentId) return;
+    if (!order.createdAtNumber) return;
+    const warData = warehousesMonthsData[order.warehouseId]
+    if (!warData) return;
+
+    const month = getMonthByUnixTime(order.createdAtNumber, months)
+    if (!month) return
+
+    const monthData = monthsData[month.monthName]
+    const warMonthData = warData.months[month.monthName]
+
+    monthData.orders_amount += Number(order.total ?? 0)
+    monthData.orders_count += 1
+    monthData.orders_types_count.total += 1
+
+    warMonthData.orders_amount += Number(order.total ?? 0)
+    warMonthData.orders_count += 1
+    warMonthData.orders_types_count.total += 1
+    if (docTypesMap[order.typeDocumentId].code === 'FAC') {
+      warMonthData.orders_types_count.facturas += 1
+      monthData.orders_types_count.facturas += 1
+    } else if (docTypesMap[order.typeDocumentId].code === 'BOL') {
+      warMonthData.orders_types_count.boletas += 1
+      monthData.orders_types_count.boletas += 1
+    } else {
+      warMonthData.orders_types_count.otros += 1
+      monthData.orders_types_count.otros += 1
     }
   })
 
@@ -263,22 +327,20 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   const skusCount = await csmProductsRepo.countBy({ companyId: csmCompany?.id })
 
   const csmPurchasesRepo = datasource.sales.getRepository(PurDocuments)
-  // const csmOrdersRepo = datasource.sales.getRepository(SalOrders)
+  const csmOrdersRepo = datasource.sales.getRepository(SalOrders)
   const abstractSaleRepo = datasource.sales.getRepository(AbstractSale)
 
   const firstSale = await abstractSaleRepo.findOne({ where: { aclId: aclCompany?.id, createdAt: Not(Equal(0)) }, order: { createdAt: 'ASC' } })
   const lastSale = await abstractSaleRepo.findOne({ where: { aclId: aclCompany?.id, createdAt: Not(Equal(0)) }, order: { createdAt: 'DESC' } })
   const lastPurchase = await csmPurchasesRepo.findOne({ where: { companyId: csmCompany?.id, deletedAt: IsNull() }, order: { documentDateNumber: 'DESC' } })
-  // const lastOrder = await csmOrdersRepo.findOne({ where: { companyId: csmCompany?.id, deletedAt: IsNull() }, order: { createdAtNumber: 'DESC' } })
-  const abstractData = await getDataLastMonths(3, abstractSaleRepo, aclCompany, warehouses, docTypesMap, csmPurchasesRepo, csmCompany)
+  const lastOrder = await csmOrdersRepo.findOne({ where: { companyId: csmCompany?.id, deletedAt: IsNull() }, order: { createdAtNumber: 'DESC' } })
+  const abstractData = await getDataLastMonths(3, abstractSaleRepo, aclCompany, warehouses, docTypesMap, csmPurchasesRepo, csmCompany, csmOrdersRepo)
   const warehousesData: AbstractWarehouse[] = []
   const last_three_months: AbstractMonthData[] = Object.values(abstractData.monthsData)
   for (const warehouseId in abstractData.warehousesMonthsData) {
     const warehouse = warehousesMap[warehouseId]
     const warMonthData = abstractData.warehousesMonthsData[warehouseId]
-
-    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', last_three_months: Object.values(warMonthData.months), address: warehouse.address ?? '--' })
-
+    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', address: warehouse.address ?? '--', last_three_months: Object.values(warMonthData.months) })
   }
 
   const response: AbstractResponse = {
@@ -289,6 +351,7 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
     first_sale_date: firstSale?.createdAt ? new Date(firstSale?.createdAt) : null,
     last_sale_date: lastSale?.createdAt ? new Date(lastSale?.createdAt) : null,
     last_purchase_date: lastPurchase?.dateDocument ?? null,
+    last_order_date: lastOrder?.deliveryDate ?? null,
     last_three_months,
     employees_count: employeesCount,
     warehouses_count: warehouses.length,
@@ -319,6 +382,7 @@ app.get('abstract-company/acl-code/:aclCode', async (c) => {
 
   const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
   const csmCompany = await csmCompanyRepo.findOneBy({ aclId: aclCompany?.id })
+  const cost_used = csmCompany?.settings.flagKardexValued ?'average':'last'
 
   return c.json({
     csm_node: nodeName,
@@ -327,9 +391,9 @@ app.get('abstract-company/acl-code/:aclCode', async (c) => {
     company_id: csmCompany?.id,
     company_ruc: aclCompany?.ruc,
     company_name: aclCompany?.nombreComercial,
+    cost_used,
   })
 })
-
 
 app.post('abstract-sales/init-update', async (c) => {
   const body = await c.req.json()
@@ -342,7 +406,6 @@ app.post('abstract-sales/init-update', async (c) => {
 })
 
 app.route("c3-proxy", proxyC3Controller);
-
 
 export default {
   port: process.env.PORT || 3000,
