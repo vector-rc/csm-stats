@@ -17,6 +17,7 @@ import { AclTemplate } from "./acl-template/acl-template.entity";
 import { SalTerminal } from "./csm-terminal/csm-terminal.entity";
 import { WarProduct } from "./csm-product/war-product.entity";
 import { CsmTypeDocument } from "./csm-document-type.entity";
+import { proxyC3Controller } from "./csm-c3-proxy";
 
 process.env.TZ = "UTC";
 const app = new Hono()
@@ -340,6 +341,7 @@ app.post('abstract-sales/init-update', async (c) => {
   })
 })
 
+app.route("c3-proxy", proxyC3Controller);
 
 
 export default {
