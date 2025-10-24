@@ -13,7 +13,7 @@ export const proxyNotionController = new Hono().get(
     const bodyReq = JSON.stringify({});
     try {
       const response = await fetch(
-        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query"`,
+        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query`,
         {
           method: "POST",
           headers: {
@@ -53,7 +53,7 @@ get(
     });
     try {
       const response = await fetch(
-        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query"`,
+        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query`,
         {
           method: "POST",
           headers: {
