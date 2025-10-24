@@ -30,6 +30,7 @@
             "environmentFiles": [],
             "essential": true,
             "extraHosts": [],
+            "image": "484907499309.dkr.ecr.us-east-1.amazonaws.com/stats:1.0.28",
             "links": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
