@@ -1,9 +1,4 @@
 {
-    "compatibilities": [
-        "EC2",
-        "FARGATE",
-        "MANAGED_INSTANCES"
-    ],
     "containerDefinitions": [
         {
             "command": [],
@@ -76,47 +71,13 @@
     "memory": "512",
     "networkMode": "awsvpc",
     "placementConstraints": [],
-    "registeredAt": "2025-10-23T16:32:55.395Z",
-    "registeredBy": "arn:aws:sts::484907499309:assumed-role/cdk-hnb659fds-cfn-exec-role-484907499309-us-east-1/AWSCloudFormation",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.task-iam-role"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        }
-    ],
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "revision": 77,
     "runtimePlatform": {
         "cpuArchitecture": "ARM64",
         "operatingSystemFamily": "LINUX"
     },
-    "status": "ACTIVE",
-    "taskDefinitionArn": "arn:aws:ecs:us-east-1:484907499309:task-definition/TaskDef_csm-stats:77",
     "taskRoleArn": "arn:aws:iam::484907499309:role/InfraCrossStack-TaskDefcsmstatsTaskRoleC0F4CEC9-QFeeGGcZLuRL",
     "volumes": [],
     "tags": []
