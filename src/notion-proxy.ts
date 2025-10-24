@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 const NOTION_ACCESS_TOKEN = process.env.NOTION_ACCESS_TOKEN;
-const NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID =
-  process.env.NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID;
+const WAREHOUSES_DATABASE_ID =
+  process.env.WAREHOUSES_DATABASE_ID;
 const NOTION_BASE_URL = "https://api.notion.com/v1";
 
 export const proxyNotionController = new Hono().get(
@@ -13,7 +13,7 @@ export const proxyNotionController = new Hono().get(
     const bodyReq = JSON.stringify({});
     try {
       const response = await fetch(
-        `${NOTION_BASE_URL}/databases/${NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID}/query"`,
+        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query"`,
         {
           method: "POST",
           headers: {
@@ -53,7 +53,7 @@ get(
     });
     try {
       const response = await fetch(
-        `${NOTION_BASE_URL}/databases/${NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID}/query"`,
+        `${NOTION_BASE_URL}/databases/${WAREHOUSES_DATABASE_ID}/query"`,
         {
           method: "POST",
           headers: {
