@@ -45,6 +45,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ecs-task-def.json
+          container-name: Containercsm-stats
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy to ECS
