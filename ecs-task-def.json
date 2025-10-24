@@ -55,7 +55,16 @@
                     "protocol": "tcp"
                 }
             ],
-            "secrets": [],
+            "secrets": [
+                {
+                    "name": "NOTION_ACCESS_TOKEN",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY/NOTION_ACCESS_TOKEN"
+                },
+                {
+                    "name": "WAREHOUSES_DATABASE_ID",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY/WAREHOUSES_DATABASE_ID"
+                }
+            ],
             "systemControls": [],
             "ulimits": [],
             "volumesFrom": []

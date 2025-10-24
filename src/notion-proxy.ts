@@ -1,12 +1,40 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-const NOTION_TOKEN = process.env.NOTION_TOKEN;
+const NOTION_ACCESS_TOKEN = process.env.NOTION_ACCESS_TOKEN;
 const NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID =
   process.env.NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID;
 const NOTION_BASE_URL = "https://api.notion.com/v1";
 
 export const proxyNotionController = new Hono().get(
+  "warehouses",
+  async (c) => {
+
+    const bodyReq = JSON.stringify({});
+    try {
+      const response = await fetch(
+        `${NOTION_BASE_URL}/databases/${NOTION_ENTERPRISE_WAREHOUSES_DATABASE_ID}/query"`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${NOTION_ACCESS_TOKEN}`,
+            "Notion-Version": "2022-06-28",
+          },
+          body: bodyReq,
+        }
+      );
+
+      const responseBody = await response.json();
+      return c.json(responseBody);
+    } catch (_error) {
+      const error = _error as Error;
+      console.log(error);
+      throw new HTTPException(400, { message: error.message });
+    }
+  }
+).
+get(
   "warehouses/:warehouseId",
   async (c) => {
     const warehouseId = c.req.param().warehouseId;
@@ -30,7 +58,7 @@ export const proxyNotionController = new Hono().get(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${NOTION_TOKEN}`,
+            Authorization: `Bearer ${NOTION_ACCESS_TOKEN}`,
             "Notion-Version": "2022-06-28",
           },
           body: bodyReq,
