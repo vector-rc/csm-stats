@@ -16,6 +16,7 @@ import { SalTerminal } from "./csm-terminal/csm-terminal.entity";
 import { WarProduct } from "./csm-product/war-product.entity";
 import { CsmTypeDocument } from "./csm-document-type.entity";
 import { SalOrders } from "./csm-order.entity";
+import { WarDocumentKardex } from "./csm-document-kardex.entity";
 
 const client = new SecretsManagerClient({
     region: "us-east-1",
@@ -91,7 +92,7 @@ async function initDbs() {
                 username: secretValueSales.username,
                 password: secretValueSales.password,
                 database: secretValueSales.dbname,
-                entities: [ComCompanies, ComDelivery, ComEmployee, PurDocuments, SalDocuments, ComSubsidiaries,AbstractSale,SalTerminal,CsmTypeDocument,SalOrders],
+                entities: [ComCompanies, ComDelivery, ComEmployee, PurDocuments, SalDocuments, ComSubsidiaries, AbstractSale, SalTerminal, CsmTypeDocument, SalOrders],
                 synchronize: false,
                 logging: process.env.TYPEORM_LOGS === 'true'
             }
@@ -104,7 +105,7 @@ async function initDbs() {
                 username: secretValueProducts.username,
                 password: secretValueProducts.password,
                 database: secretValueProducts.dbname,
-                entities: [WarWarehouses,WarWarehousesProducts,WarProduct],
+                entities: [WarWarehouses, WarWarehousesProducts, WarProduct, WarDocumentKardex],
                 synchronize: false,
                 logging: process.env.TYPEORM_LOGS === 'true'
             }

@@ -7,14 +7,11 @@ export const proxyC3Controller = new Hono().post("/", async (c) => {
   const bodyReq = JSON.stringify(body);
   try {
     const response = await fetch(
-      `https://script.google.com/macros/s/AKfycbzS2gFyXJapuNIv97sdjb-cEXehUmI0vIuzjYd2MjfyPjUxepHZCsSkyJF3V6ERGe3zjQ/exec?token=${encodeURIComponent(
-        "LxW{lo)CKD-xz34D7$/B?AE+6cd6%,&;"
-      )}`,
+      `https://script.google.com/macros/s/AKfycbzS2gFyXJapuNIv97sdjb-cEXehUmI0vIuzjYd2MjfyPjUxepHZCsSkyJF3V6ERGe3zjQ/exec`,
       {
         method: "POST",
         headers: {
-          // Puedes agregar encabezados personalizados aquí si es necesario
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: bodyReq,
       }
