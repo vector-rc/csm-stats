@@ -56,16 +56,8 @@
                     "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY:ACCESS_TOKEN::"
                 },
                 {
-                    "name": "WAREHOUSES_DATABASE_ID",
-                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY:WAREHOUSES_DATABASE_ID::"
-                },
-                {
-                    "name": "AWS_ACCESS_KEY_ID",
-                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY:AWS_ACCESS_KEY_ID::"
-                },
-                {
-                    "name": "AWS_SECRET_ACCESS_KEY",
-                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY:AWS_SECRET_ACCESS_KEY::"
+                    "name": "NOTION_WAREHOUSES_DATABASE_ID",
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:484907499309:secret:notion-casamarket-IBxOPY:NOTION_WAREHOUSES_DATABASE_ID::"
                 }
             ],
             "systemControls": [],
