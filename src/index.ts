@@ -87,6 +87,8 @@ interface AbstractWarehouse {
   province: string;
   district: string;
   address: string;
+  location:string,
+  enable:boolean,
   last_three_months: AbstractMonthData[];
 }
 
@@ -348,7 +350,7 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   for (const warehouseId in abstractData.warehousesMonthsData) {
     const warehouse = warehousesMap[warehouseId]
     const warMonthData = abstractData.warehousesMonthsData[warehouseId]
-    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', address: warehouse.address ?? '--', last_three_months: Object.values(warMonthData.months) })
+    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', address: warehouse.address ?? '--',location:warehouse.location??'--',enable:Boolean(warehouse.flagActive), last_three_months: Object.values(warMonthData.months) })
   }
 
   const response: AbstractResponse = {
@@ -372,7 +374,6 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
     merchandise_entries_count: 0,
     // merchandise_entries_count: documentsKardexEntries.length,
     cost_used: csmCompany?.settings.flagKardexValued ? 'average' : 'last'
-
   }
 
   return c.json(response)

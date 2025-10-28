@@ -3,7 +3,7 @@ name: Build and Deploy to ECS
 on:
   push:
     branches:
-      - main   # o la rama que quieras
+      - main 
 
 concurrency:
   group: deploy-${{ github.ref }}
