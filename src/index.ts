@@ -93,7 +93,7 @@ interface AbstractWarehouse {
 }
 
 interface AbstractResponse {
-  csm_node: any;
+  csm_node: string;
   acl_id: number;
   acl_code: string;
   company_id: number;
@@ -126,6 +126,7 @@ function getMonthByUnixTime(time: number, ranges: { monthName: string, start: nu
 async function getDataLastMonths(countMonths: number, abstractSaleRepo: Repository<AbstractSale>, aclCompany: AclCompany, warehouses: WarWarehouses[], docTypesMap: Record<string, CsmTypeDocument>, csmPurchasesRepo: Repository<PurDocuments>, csmCompany: ComCompanies, csmOrdersRepo: Repository<SalOrders>) {
 
   const today = new Date()
+  today.setDate(today.getDate()-15)
   const months: { monthName: string, monthNumber: number, start: number, end: number }[] = []
 
   for (let i = 0; i <= countMonths; i++) {
@@ -297,7 +298,7 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   const aclTemplate = await aclTemplateRepo.findOneBy({ id: aclCompany?.templateId })
 
   // console.log('ACL TEMPLATE SETTINGS',aclTemplate?.settings)
-  const csmNode = aclTemplate?.settings.domains.find((d: any) => d.code === 'PRODUCTS_URL').endPoint.replace('https://', '').split('.')[0]
+  const csmNode:string = aclTemplate?.settings.domains.find((d: any) => d.code === 'PRODUCTS_URL').endPoint.replace('https://', '').split('.')[0]
   const datasource = getDatasource(csmNode)
 
   const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
