@@ -19,7 +19,7 @@ import { WarProduct } from "./csm-product/war-product.entity";
 import { CsmTypeDocument } from "./csm-document-type.entity";
 import { proxyC3Controller } from "./csm-c3-proxy";
 import { SalOrders } from "./csm-order.entity";
-import { WarDocumentKardex } from "./csm-document-kardex.entity";
+// import { WarDocumentKardex } from "./csm-document-kardex.entity";
 import { proxyNotionController } from "./notion-proxy";
 
 process.env.TZ = "UTC";
