@@ -19,8 +19,7 @@ import { WarProduct } from "./csm-product/war-product.entity";
 import { CsmTypeDocument } from "./csm-document-type.entity";
 import { proxyC3Controller } from "./csm-c3-proxy";
 import { SalOrders } from "./csm-order.entity";
-// import { WarDocumentKardex } from "./csm-document-kardex.entity";
-import { proxyNotionController } from "./notion-proxy";
+import { WarDocumentKardex } from "./csm-document-kardex.entity";
 
 process.env.TZ = "UTC";
 const app = new Hono()
@@ -333,9 +332,9 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   const csmProductsRepo = datasource.products.getRepository(WarProduct)
   const skusCount = await csmProductsRepo.countBy({ companyId: csmCompany?.id })
 
-  // const csmDocumentsKardexRepo = datasource.products.getRepository(WarDocumentKardex)
-  // const documentsKardex = await csmDocumentsKardexRepo.find({ where: { companyId: csmCompany?.id }, select: { id: true, documentTypeName: true } })
-  // const documentsKardexEntries = documentsKardex.filter(dk => dk.documentTypeName?.trim() === 'Ingreso de Mercaderia')
+  const csmDocumentsKardexRepo = datasource.products.getRepository(WarDocumentKardex)
+  const documentsKardex = await csmDocumentsKardexRepo.find({ where: { companyId: csmCompany?.id }, select: { id: true, documentTypeName: true } })
+  const documentsKardexEntries = documentsKardex.filter(dk => dk.documentTypeName?.trim() === 'Ingreso de Mercaderia')
 
   const csmPurchasesRepo = datasource.sales.getRepository(PurDocuments)
   const csmOrdersRepo = datasource.sales.getRepository(SalOrders)
@@ -372,8 +371,8 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
     sellers_count: sellersCount,
     terminals_count: terminalCount,
     skus_count: skusCount,
-    merchandise_entries_count: 0,
-    // merchandise_entries_count: documentsKardexEntries.length,
+    // merchandise_entries_count: 0,
+    merchandise_entries_count: documentsKardexEntries.length,
     cost_used: csmCompany?.settings.flagKardexValued ? 'average' : 'last'
   }
 
@@ -420,7 +419,6 @@ app.post('abstract-sales/init-update', async (c) => {
 })
 
 app.route("c3-proxy", proxyC3Controller);
-app.route("notion-proxy", proxyNotionController);
 
 export default {
   port: process.env.PORT || 3000,
