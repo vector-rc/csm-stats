@@ -466,7 +466,7 @@ app.get('warehouses', async (c) => {
       }
     }
   );
-const allWarehouses:{id:number,csmNode:string,aclId:number,aclCode:string,name:string,address:string,district:string,province:string,department:string,ubigeo:string,location:string }[] = []
+const allWarehouses:{id:number,csmNode:string,aclId:number,aclCode:string,name:string,address:string,district:string,province:string,department:string,ubigeo:string,location:string|null }[] = []
 
   for (const csmNode in groups) {
   const datasource = getDatasource(csmNode)
@@ -482,7 +482,7 @@ const nodeCompanies = groups[csmNode]
     warehouses.forEach(w=>{
       const csmCompany = csmCompanyMap[w.companyId]
       if(!csmCompany) return
-      allWarehouses.push({aclCode:csmCompany.aclCode??'',aclId:csmCompany.aclId??0,csmNode,name:w.name,department:w.departmentName??'',district:w.districtName??'',province:w.districtName??'',ubigeo:w.ubigeo??'',location:w.location??'',address:w.address??'',id:w.id})
+      allWarehouses.push({aclCode:csmCompany.aclCode??'',aclId:csmCompany.aclId??0,csmNode,name:w.name,department:w.departmentName??'',district:w.districtName??'',province:w.districtName??'',ubigeo:w.ubigeo??'',location:w.location??null,address:w.address??'',id:w.id})
     })
   }
 
