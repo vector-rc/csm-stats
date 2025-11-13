@@ -425,12 +425,7 @@ app.get('warehouses', async (c) => {
     const aclCompanyRepo = aclDataSource.getRepository(AclCompany)
   const aclTemplateRepo = aclDataSource.getRepository(AclTemplate)
   const aclCompanies = await aclCompanyRepo.find({ })
-  const aclCompaniesMap =  Object.fromEntries(aclCompanies.map(at=>[at.id,at]))
-
   const aclTemplates = await aclTemplateRepo.find({ })
-
-  const aclTemplatesMap = Object.fromEntries(aclTemplates.map(at=>[at.id,at]))
-
 
    const templateCsmNode = Object.fromEntries(
     aclTemplates.map((t) => {
@@ -475,6 +470,7 @@ const allWarehouses:{id:number,csmNode:string,aclId:number,aclCode:string,addres
 
   for (const csmNode in groups) {
   const datasource = getDatasource(csmNode)
+  if(!datasource) continue
 const nodeCompanies = groups[csmNode]
     const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
   const csmCompany = await csmCompanyRepo.find({where:{aclId:In(nodeCompanies.map(nc=>nc.id))}})
