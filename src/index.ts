@@ -401,6 +401,7 @@ app.get('abstract-company/acl-code/:aclCode', async (c) => {
     csm_node: nodeName,
     acl_id: aclCompany?.id,
     acl_code: aclCompany?.codeCompany,
+    acl_template:aclTemplate?.name,
     company_id: csmCompany?.id,
     company_ruc: aclCompany?.ruc,
     company_name: aclCompany?.nombreComercial,
@@ -416,6 +417,80 @@ app.post('abstract-sales/init-update', async (c) => {
   return c.json({
     ok: 'ok'
   })
+})
+
+
+app.get('warehouses', async (c) => {
+
+    const aclCompanyRepo = aclDataSource.getRepository(AclCompany)
+  const aclTemplateRepo = aclDataSource.getRepository(AclTemplate)
+  const aclCompanies = await aclCompanyRepo.find({ })
+  const aclCompaniesMap =  Object.fromEntries(aclCompanies.map(at=>[at.id,at]))
+
+  const aclTemplates = await aclTemplateRepo.find({ })
+
+  const aclTemplatesMap = Object.fromEntries(aclTemplates.map(at=>[at.id,at]))
+
+
+   const templateCsmNode = Object.fromEntries(
+    aclTemplates.map((t) => {
+      //	    console.log({t})
+      const csmNode = t?.settings.domains
+        .find((d: any) => d.code === "PRODUCTS_URL")
+        ?.endPoint?.replace("https://", "")
+        .split(".")[0];
+
+      return [t.id, csmNode];
+    })
+  );
+
+   const groups: Record<
+    string,
+    {
+      id: number;
+      code: string;
+    }[]
+  > = {};
+
+  aclCompanies.forEach(
+    (c) => {
+      if(!c.templateId) return
+      const csmNode = templateCsmNode[c.templateId];
+      // if (!csmNodesMap[csmNode]) return;
+
+      if (groups[csmNode]) {
+        groups[csmNode].push({
+          id:c.id,code:c.codeCompany.trim()
+        });
+      } else {
+        groups[csmNode] = [
+          {
+           id:c.id,code:c.codeCompany.trim()
+          },
+        ];
+      }
+    }
+  );
+const allWarehouses:{id:number,csmNode:string,aclId:number,aclCode:string,address:string,district:string,province:string,department:string,ubigeo:string,location:string }[] = []
+
+  for (const csmNode in groups) {
+  const datasource = getDatasource(csmNode)
+const nodeCompanies = groups[csmNode]
+    const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
+  const csmCompany = await csmCompanyRepo.find({where:{aclId:In(nodeCompanies.map(nc=>nc.id))}})
+  const csmCompanyMap = Object.fromEntries(csmCompany.map(w => [w.id, w]))
+
+  const csmWarehousesRepo = datasource.products.getRepository(WarWarehouses)
+  const warehouses = await csmWarehousesRepo.find({ })
+ 
+    warehouses.forEach(w=>{
+      const csmCompany = csmCompanyMap[w.companyId]
+      if(!csmCompany) return
+      allWarehouses.push({aclCode:csmCompany.aclCode??'',aclId:csmCompany.aclId??0,csmNode,department:w.departmentName??'',district:w.districtName??'',province:w.districtName??'',ubigeo:w.ubigeo??'',location:w.location??'',address:w.address??'',id:w.id})
+    })
+  }
+
+  return c.json(allWarehouses)
 })
 
 app.route("c3-proxy", proxyC3Controller);
