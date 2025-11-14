@@ -11,10 +11,10 @@ export const proxyC3Controller = new Hono().post("/", async (c) => {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: bodyReq,
-      }
+      },
     );
 
     const responseBody = await response.json();

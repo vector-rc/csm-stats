@@ -41,7 +41,7 @@ export class WarDocumentKardex {
     nullable: true,
     comment: "Nombre de tipo de documento relacionado",
   })
-  documentTypeName: string | null; 
+  documentTypeName: string | null;
 
   @Column("datetime", { name: "operation_date", nullable: true })
   operationDate: Date | null;

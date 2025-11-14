@@ -1,9 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Index("bank_account_id_sal_orders_fk", ["bankAccountId"], {})
 @Index("company_id", ["companyId"], {})
@@ -21,7 +16,7 @@ import {
 @Index(
   "search_sal_orders",
   ["channel", "warehouseName", "warehouseAddress", "comments"],
-  { fulltext: true }
+  { fulltext: true },
 )
 @Index("subsidiary_order_state_fk", ["subsidiaryId"], {})
 @Index("terminal_id_sal_orders", ["terminalId"], {})
@@ -506,5 +501,4 @@ export class SalOrders {
 
   @Column("int", { name: "delivery_id_2", nullable: true })
   deliveryId_2: number | null;
-
 }
