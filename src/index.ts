@@ -86,7 +86,7 @@ interface AbstractWarehouse {
   province: string;
   district: string;
   address: string;
-  location:string,
+  location:{x:number,y:number}|null,
   enable:boolean,
   last_three_months: AbstractMonthData[];
 }
@@ -350,7 +350,7 @@ app.get('abstract/acl-code/:aclCode', async (c) => {
   for (const warehouseId in abstractData.warehousesMonthsData) {
     const warehouse = warehousesMap[warehouseId]
     const warMonthData = abstractData.warehousesMonthsData[warehouseId]
-    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', address: warehouse.address ?? '--',location:warehouse.location??'--',enable:Boolean(warehouse.flagActive), last_three_months: Object.values(warMonthData.months) })
+    warehousesData.push({ id: warehouse.id, name: warehouse.name, code: warehouse.code, ubigeo: warehouse.ubigeo ?? '--', department: warehouse.departmentName ?? '--', province: warehouse.provinceName ?? '--', district: warehouse.districtName ?? '--', address: warehouse.address ?? '--',location:warehouse.location??null,enable:Boolean(warehouse.flagActive), last_three_months: Object.values(warMonthData.months) })
   }
 
   const response: AbstractResponse = {
@@ -420,14 +420,30 @@ app.post('abstract-sales/init-update', async (c) => {
 })
 
 
-app.get('warehouses', async (c) => {
 
-    const aclCompanyRepo = aclDataSource.getRepository(AclCompany)
-  const aclTemplateRepo = aclDataSource.getRepository(AclTemplate)
-  const aclCompanies = await aclCompanyRepo.find({ })
-  const aclTemplates = await aclTemplateRepo.find({ })
 
-   const templateCsmNode = Object.fromEntries(
+interface SalWarehouse {
+  id: number;
+  csmNode: string;
+  aclId: number;
+  aclCode: string;
+  name: string;
+  address: string;
+  district: string;
+  province: string;
+  department: string;
+  ubigeo: string;
+  location: { x: number; y: number } | null;
+  companyId: number;
+}
+
+app.get("warehouses", async (c) => {
+  const aclCompanyRepo = aclDataSource.getRepository(AclCompany);
+  const aclTemplateRepo = aclDataSource.getRepository(AclTemplate);
+  const aclCompanies = await aclCompanyRepo.find({});
+  const aclTemplates = await aclTemplateRepo.find({});
+
+  const templateCsmNode = Object.fromEntries(
     aclTemplates.map((t) => {
       //	    console.log({t})
       const csmNode = t?.settings.domains
@@ -436,10 +452,10 @@ app.get('warehouses', async (c) => {
         .split(".")[0];
 
       return [t.id, csmNode];
-    })
+    }),
   );
 
-   const groups: Record<
+  const groups: Record<
     string,
     {
       id: number;
@@ -447,47 +463,62 @@ app.get('warehouses', async (c) => {
     }[]
   > = {};
 
-  aclCompanies.forEach(
-    (c) => {
-      if(!c.templateId) return
-      const csmNode = templateCsmNode[c.templateId];
-      // if (!csmNodesMap[csmNode]) return;
+  aclCompanies.forEach((c) => {
+    if (!c.templateId) return;
+    const csmNode = templateCsmNode[c.templateId];
+    // if (!csmNodesMap[csmNode]) return;
 
-      if (groups[csmNode]) {
-        groups[csmNode].push({
-          id:c.id,code:c.codeCompany.trim()
-        });
-      } else {
-        groups[csmNode] = [
-          {
-           id:c.id,code:c.codeCompany.trim()
-          },
-        ];
-      }
+    if (groups[csmNode]) {
+      groups[csmNode].push({
+        id: c.id,
+        code: c.codeCompany.trim(),
+      });
+    } else {
+      groups[csmNode] = [
+        {
+          id: c.id,
+          code: c.codeCompany.trim(),
+        },
+      ];
     }
-  );
-const allWarehouses:{id:number,csmNode:string,aclId:number,aclCode:string,name:string,address:string,district:string,province:string,department:string,ubigeo:string,location:string|null }[] = []
+  });
+  const allWarehouses: SalWarehouse[] = [];
 
   for (const csmNode in groups) {
-  const datasource = getDatasource(csmNode)
-  if(!datasource) continue
-const nodeCompanies = groups[csmNode]
-    const csmCompanyRepo = datasource.sales.getRepository(ComCompanies)
-  const csmCompany = await csmCompanyRepo.find({where:{aclId:In(nodeCompanies.map(nc=>nc.id))}})
-  const csmCompanyMap = Object.fromEntries(csmCompany.map(w => [w.id, w]))
+    const datasource = getDatasource(csmNode);
+    if (!datasource) continue;
+    const nodeCompanies = groups[csmNode];
+    const csmCompanyRepo = datasource.sales.getRepository(ComCompanies);
+    const csmCompany = await csmCompanyRepo.find({
+      where: { aclId: In(nodeCompanies.map((nc) => nc.id)) },
+    });
+    const csmCompanyMap = Object.fromEntries(csmCompany.map((w) => [w.id, w]));
 
-  const csmWarehousesRepo = datasource.products.getRepository(WarWarehouses)
-  const warehouses = await csmWarehousesRepo.find({ })
- 
-    warehouses.forEach(w=>{
-      const csmCompany = csmCompanyMap[w.companyId]
-      if(!csmCompany) return
-      allWarehouses.push({aclCode:csmCompany.aclCode??'',aclId:csmCompany.aclId??0,csmNode,name:w.name,department:w.departmentName??'',district:w.districtName??'',province:w.districtName??'',ubigeo:w.ubigeo??'',location:w.location??null,address:w.address??'',id:w.id})
-    })
+    const csmWarehousesRepo = datasource.products.getRepository(WarWarehouses);
+    const warehouses = await csmWarehousesRepo.find({});
+
+    warehouses.forEach((w) => {
+      const csmCompany = csmCompanyMap[w.companyId];
+      if (!csmCompany) return;
+      allWarehouses.push({
+        aclCode: csmCompany.aclCode ?? "",
+        aclId: csmCompany.aclId ?? 0,
+        csmNode,
+        name: w.name,
+        department: w.departmentName ?? "",
+        district: w.districtName ?? "",
+        province: w.districtName ?? "",
+        ubigeo: w.ubigeo ?? "",
+        location: w.location ?? null,
+        address: w.address ?? "",
+        id: w.id,
+        companyId: w.companyId,
+      });
+    });
   }
 
-  return c.json(allWarehouses)
-})
+  return c.json(allWarehouses);
+});
 
 app.route("c3-proxy", proxyC3Controller);
 

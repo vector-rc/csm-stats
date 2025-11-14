@@ -33,7 +33,7 @@ export class WarWarehouses {
   urlLogo?: string
 
   @Column({ name: 'location', type: 'text' })
-  location?: string
+  location?: {x:number,y:number}|null;
 
   @Column({ name: 'longitude', type: 'decimal' })
   longitude?: number
